@@ -24,13 +24,13 @@ public class Departamento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Integer idDepartamento;
+    private Integer id;
     @Column(name = "nome")
-    private String nomeDepartamento;
+    private String nome;
     @Column(name = "_local")
-    private String localDepartamento;
+    private String _local;
     @Column(name = "descricao")
-    private String descricaoDepartamento;
+    private String descricao;
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "departamento") 
     private List<Funcionario> funcionarios;
 }

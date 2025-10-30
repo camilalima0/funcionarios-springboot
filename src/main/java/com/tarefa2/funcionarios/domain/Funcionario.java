@@ -26,16 +26,16 @@ public class Funcionario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Integer idFuncionario;
+    private Integer id;
     @ManyToOne(fetch = FetchType.LAZY) 
     @JoinColumn(name = "departamento_id") 
     @JsonIgnore 
     private Departamento departamento;
     @Column(name = "nome")
-    private String nomeFuncionario;
+    private String nome;
     @Column(name = "funcao")
-    private String funcaoFuncionario;
+    private String funcao;
     @Column(name = "registro")
-    private String registroFuncionario;
+    private String registro;
     
 }

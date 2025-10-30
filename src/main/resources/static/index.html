@@ -1,0 +1,209 @@
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    </head>
+    <body>
+        <div id="app">
+
+          <nav class="navbar navbar-expand-lg" data-bs-theme="dark"  style="background-color: rgb(5, 39, 102)">
+            <div class="container-fluid">
+              <a class="navbar-brand" href="#">Portal dos Funcionários</a>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button> 
+            </div>
+          </nav>
+
+          <div id="content" class="container mt-4">
+
+            <div v-if="paginaAtual === 'home'">
+              <h2>Selecione uma área para gerenciar</h2>
+                <hr>
+                <div class="list-group">
+                    <button type="button" class="list-group-item list-group-item-action" 
+                            @click="paginaAtual = 'departamentos'">
+                        Gerenciar Departamentos
+                    </button>
+                    <button type-button class="list-group-item list-group-item-action" 
+                    @click="paginaAtual = 'funcionarios'">
+                        Gerenciar Funcionários (Em breve)
+                    </button>
+                </div>
+            </div>
+
+            <div v-if="paginaAtual === 'departamentos'">
+
+              <button class="btn btn-outline-secondary btn-sm mb-3" @click="paginaAtual = 'home'">
+                  &larr; Voltar ao Menu
+              </button>
+
+              <div class="d-flex justify-content-between mb-3 .align-bottom">
+              <h2>Departamentos Cadastrados</h2>
+
+              <form class="d-flex" role="search">
+                <input class="form-control me-3" type="search" placeholder="Buscar em Departamentos" style=" min-width: 350px;"
+                 v-model="termoBusca" @input="desselecionar" />
+              </form>
+
+              <div class="btn-group" role="group" style="white-space: nowrap; height: 38px;">
+                <button type="button" class="btn btn-primary" @click="abrirModalAdicionar">Adicionar</button>
+                <button type="button" class="btn btn-secondary" @click="abrirModalAtualizar">Atualizar</button>
+                <button type="button" class="btn btn-secondary" @click="deletarDepartamento">Deletar</button>
+              </div>
+              </div>
+
+              <table class="table table-hover" v-if="departamentosFiltrados.length > 0">
+                <thead>
+                  <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Local</th>
+                    <th scope="col">Descrição</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="depto in departamentosFiltrados" :key="depto.id"
+                    @click="selecionarDepartamento(depto)"
+                    :class="{ 'table-secondary': depto === departamentoSelecionado }"
+                    style="cursor: pointer;">
+
+                      <th scope="row">{{ depto.id }}</th>
+                      <td>{{ depto.nome }}</td>
+                      <td>{{ depto._local }}</td>
+                      <td>{{ depto.descricao }}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <p v-if="departamentos.length === 0" class="text-muted">
+                Carregando dados da API...
+              </p>
+
+              <p v-if="departamentos.length > 0 && departamentosFiltrados.length === 0" class="text-muted">
+                Nenhum resultado encontrado para "{{ termoBusca }}".
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <script src="https://unpkg.com/vue@3"></script>
+        <script>
+          // 2. A sintaxe para criar o app mudou
+          const { createApp } = Vue
+
+          const app = createApp({
+            data() {
+              return {
+                departamentos: [], // Lista original vinda da API
+                departamentoSelecionado: null, // Quem está selecionado (null = ninguém)
+                termoBusca: '', // O que está digitado na searchbar
+                paginaAtual: 'home' // Controla qual página está sendo exibida
+              }
+            },
+            computed: {
+              // Esta é a lista que a tabela vai RENDERIZAR.
+              // É uma lista "virtual" que se atualiza sozinha.
+              departamentosFiltrados() {
+                // Se não há nada na busca, retorna a lista completa
+                if (this.termoBusca === '') {
+                  return this.departamentos;
+                }
+
+                // Normaliza o termo de busca (minúsculas)
+                const busca = this.termoBusca.toLowerCase();
+
+                // Filtra a lista principal
+                return this.departamentos.filter(depto => {
+                  // Converte tudo para string e minúsculas para buscar em TODOS os campos
+                  const id = String(depto.id).toLowerCase();
+                  const nome = depto.nome.toLowerCase();
+                  const local = depto._local.toLowerCase();
+                  const desc = depto.descricao.toLowerCase();
+
+                  // Retorna true se QUALQUER campo incluir o termo de busca
+                  return id.includes(busca) || 
+                        nome.includes(busca) || 
+                        local.includes(busca) || 
+                        desc.includes(busca);
+                });
+              }
+            },
+            methods: {
+              // Este método é chamado pelo fetch() quando o app carrega
+              carregarDepartamentos() {
+                fetch('http://localhost:8080/departamento')
+                  .then(response => response.json())
+                  .then(data => {
+                    this.departamentos = data; // Guarda os dados na lista principal
+                  })
+                  .catch(error => {
+                    console.error('Erro ao buscar departamentos:', error)
+                  });
+              },
+
+              // Chamado quando uma <tr> é clicada
+              selecionarDepartamento(depto) {
+                // Se o usuário clicar na linha que JÁ está selecionada...
+                if (this.departamentoSelecionado === depto) {
+                  this.departamentoSelecionado = null; // ... desmarca (fica nulo).
+                } else {
+                  this.departamentoSelecionado = depto; // ... senão, seleciona.
+                }
+              },
+
+              // Chamado quando o usuário digita na busca
+              desselecionar() {
+                this.departamentoSelecionado = null; // Limpa a seleção
+              },
+
+              // Chamado pelo botão "Deletar"
+              deletarDepartamento() {
+                // Pega o ID do item selecionado
+                const id = this.departamentoSelecionado.id;
+                
+                // Confirmação (boa prática)
+                if (confirm(`Tem certeza que deseja deletar o departamento ID ${id}?`)) {
+                  
+                  // Chama a API (Ex: DELETE http://localhost:8080/departamento/4)
+                  fetch(`http://localhost:8080/departamento/${id}`, {
+                    method: 'DELETE'
+                  })
+                  .then(response => {
+                    if (response.ok) {
+                      // Se deu certo, remove o item da lista LOCAL (sem F5)
+                      this.departamentos = this.departamentos.filter(d => d.id !== id);
+                      this.desselecionar(); // Limpa a seleção
+                    } else {
+                      alert('Erro ao deletar departamento.');
+                    }
+                  })
+                  .catch(error => console.error('Erro:', error));
+                }
+              },
+
+              // Métodos placeholder para os outros botões
+              abrirModalAdicionar() {
+                this.desselecionar();
+                alert('Aqui você abriria um Modal para ADICIONAR um novo departamento.');
+                // Ex: this.novoDepartamento = {}; this.showModalAdd = true;
+              },
+              
+              abrirModalAtualizar() {
+                alert(`Aqui você abriria um Modal para ATUALIZAR o ID ${this.departamentoSelecionado.id}`);
+                // Ex: this.departamentoEdit = { ...this.departamentoSelecionado }; 
+                // this.showModalEdit = true;
+              }
+            },
+
+            mounted() {
+              this.carregarDepartamentos();
+            }
+          });
+          app.mount('#app')
+        </script>
+    </body>
+</html>
