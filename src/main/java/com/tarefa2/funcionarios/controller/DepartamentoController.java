@@ -32,9 +32,9 @@ public class DepartamentoController {
     }
     
     @PostMapping(path = "/departamento")
-    public void salvar(@RequestBody Departamento departamento) {
+    public Departamento salvar(@RequestBody Departamento departamento) {
         //o funcionamento da função salvar está no service (comando save)
-        departamentoService.salvar(departamento);
+        return departamentoService.salvar(departamento);
     }
     
     //listar todos os departamentos
@@ -47,9 +47,9 @@ public class DepartamentoController {
     
     //atualizar departamento (caso o id nao exista, cria uma entry)
     @PutMapping(path = "/departamento")
-    public void atualizar(@RequestBody Departamento departamento) {
+    public Departamento atualizar(@RequestBody Departamento departamento) {
         //a logica do save() está dentro da função atualizar no service
-        departamentoService.atualizar(departamento);
+        return departamentoService.atualizar(departamento);
     }
     
     //deletar departamento

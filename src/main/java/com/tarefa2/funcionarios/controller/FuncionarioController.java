@@ -30,8 +30,8 @@ public class FuncionarioController {
     }
     
     @PostMapping(path = "/funcionario")
-    public void salvar(@RequestBody Funcionario funcionario) {
-        funcionarioService.salvar(funcionario);
+    public Funcionario salvar(@RequestBody Funcionario funcionario) {
+        return funcionarioService.salvar(funcionario);
     }
     
     @GetMapping(path = "/funcionario")
@@ -41,8 +41,8 @@ public class FuncionarioController {
     }
     
     @PutMapping(path = "/funcionario")
-    public void atualizar (@RequestBody Funcionario funcionario) {
-        funcionarioService.atualizar(funcionario);
+    public Funcionario atualizar (@RequestBody Funcionario funcionario) {
+        return funcionarioService.atualizar(funcionario);
     }
     
     @DeleteMapping(path = "/funcionario/{id}")

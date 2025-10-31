@@ -1,209 +1,318 @@
 <html>
-    <head>
-        <title>TODO supply a title</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    </head>
-    <body>
-        <div id="app">
 
-          <nav class="navbar navbar-expand-lg" data-bs-theme="dark"  style="background-color: rgb(5, 39, 102)">
-            <div class="container-fluid">
-              <a class="navbar-brand" href="#">Portal dos Funcionários</a>
-              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-              </button> 
+<head>
+  <title>TODO supply a title</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <div id="app">
+
+    <nav class="navbar navbar-expand-lg" data-bs-theme="dark" style="background-color: rgb(5, 39, 102)">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Portal dos Funcionários</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+          aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      </div>
+    </nav>
+
+    <div id="content" class="container mt-4">
+
+      <div v-if="paginaAtual === 'home'">
+        <h2>Selecione uma área para gerenciar</h2>
+        <hr>
+        <div class="list-group">
+          <button type="button" class="list-group-item list-group-item-action" @click="paginaAtual = 'departamentos'">
+            Gerenciar Departamentos
+          </button>
+          <button type="button" class="list-group-item list-group-item-action" @click="paginaAtual = 'funcionarios'">
+            Gerenciar Funcionários
+          </button>
+        </div>
+      </div>
+
+      <div v-if="paginaAtual === 'departamentos' || paginaAtual === 'funcionarios'">
+
+        <button class="btn btn-outline-secondary btn-sm mb-3" @click="paginaAtual = 'home'">
+          &larr; Voltar ao Menu
+        </button>
+
+        <div v-if="paginaAtual === 'departamentos'">
+          <div class=" d-flex justify-content-between mb-3 .align-bottom">
+            <h2>Departamentos Cadastrados</h2>
+
+            <form class="d-flex" role="search">
+              <input class="form-control me-3" type="search" placeholder="Buscar em Departamentos"
+                style=" min-width: 350px;" v-model="termoBusca" @input="desselecionar" />
+            </form>
+
+            <div class="btn-group" role="group" style="white-space: nowrap; height: 38px;">
+              <!-- Quando uma linha está selecionada: Atualizar/Deletar habilitados (azul), Adicionar desabilitado (cinza) -->
+              <button id="adicionar" type="button" class="btn"
+                :class="{ 'btn-primary': departamentoSelecionado === null, 'btn-secondary': departamentoSelecionado !== null }"
+                :disabled="departamentoSelecionado !== null" @click="abrirModalAdicionar">Adicionar</button>
+
+              <button id="atualizar" type="button" class="btn"
+                :class="{ 'btn-primary': departamentoSelecionado !== null, 'btn-secondary': departamentoSelecionado === null }"
+                :disabled="departamentoSelecionado === null" @click="abrirModalAtualizar">Atualizar</button>
+
+              <button id="deletar" type="button" class="btn"
+                :class="{ 'btn-primary': departamentoSelecionado !== null, 'btn-secondary': departamentoSelecionado === null }"
+                :disabled="departamentoSelecionado === null" @click="deletarDepartamento">Deletar</button>
             </div>
-          </nav>
+          </div>
 
-          <div id="content" class="container mt-4">
+          <table class="table table-hover" v-if="departamentosFiltrados.length > 0">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Local</th>
+                <th scope="col">Descrição</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="depto in departamentosFiltrados" :key="depto.id" @click="selecionarDepartamento(depto)"
+                :class="{ 'table-secondary': depto === departamentoSelecionado }" style="cursor: pointer;">
 
-            <div v-if="paginaAtual === 'home'">
-              <h2>Selecione uma área para gerenciar</h2>
-                <hr>
-                <div class="list-group">
-                    <button type="button" class="list-group-item list-group-item-action" 
-                            @click="paginaAtual = 'departamentos'">
-                        Gerenciar Departamentos
-                    </button>
-                    <button type-button class="list-group-item list-group-item-action" 
-                    @click="paginaAtual = 'funcionarios'">
-                        Gerenciar Funcionários (Em breve)
-                    </button>
+                <th scope="row">{{ depto.id }}</th>
+                <td>{{ depto.nome }}</td>
+                <td>{{ depto._local }}</td>
+                <td>{{ depto.descricao }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p v-if="departamentos.length === 0" class="text-muted">
+            Carregando dados da API...
+          </p>
+
+          <p v-if="departamentos.length > 0 && departamentosFiltrados.length === 0" class="text-muted">
+            Nenhum resultado encontrado para "{{ termoBusca }}".
+          </p>
+        </div>
+        <!-- Modal: Adicionar Departamento -->
+        <div class="modal fade" id="adicionarModal" tabindex="-1" aria-labelledby="adicionarModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <form @submit.prevent="criarDepartamento">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="adicionarModalLabel">Adicionar Departamento</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
-            </div>
-
-            <div v-if="paginaAtual === 'departamentos'">
-
-              <button class="btn btn-outline-secondary btn-sm mb-3" @click="paginaAtual = 'home'">
-                  &larr; Voltar ao Menu
-              </button>
-
-              <div class="d-flex justify-content-between mb-3 .align-bottom">
-              <h2>Departamentos Cadastrados</h2>
-
-              <form class="d-flex" role="search">
-                <input class="form-control me-3" type="search" placeholder="Buscar em Departamentos" style=" min-width: 350px;"
-                 v-model="termoBusca" @input="desselecionar" />
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label">Nome</label>
+                    <input type="text" class="form-control" v-model="novoDepartamento.nome" required />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Local</label>
+                    <input type="text" class="form-control" v-model="novoDepartamento._local" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Descrição</label>
+                    <textarea class="form-control" rows="3" v-model="novoDepartamento.descricao"></textarea>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                  <button type="submit" class="btn btn-primary"
+                    :disabled="!novoDepartamento.nome || !novoDepartamento.nome.trim()">Salvar</button>
+                </div>
               </form>
-
-              <div class="btn-group" role="group" style="white-space: nowrap; height: 38px;">
-                <button type="button" class="btn btn-primary" @click="abrirModalAdicionar">Adicionar</button>
-                <button type="button" class="btn btn-secondary" @click="abrirModalAtualizar">Atualizar</button>
-                <button type="button" class="btn btn-secondary" @click="deletarDepartamento">Deletar</button>
-              </div>
-              </div>
-
-              <table class="table table-hover" v-if="departamentosFiltrados.length > 0">
-                <thead>
-                  <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col">Nome</th>
-                    <th scope="col">Local</th>
-                    <th scope="col">Descrição</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="depto in departamentosFiltrados" :key="depto.id"
-                    @click="selecionarDepartamento(depto)"
-                    :class="{ 'table-secondary': depto === departamentoSelecionado }"
-                    style="cursor: pointer;">
-
-                      <th scope="row">{{ depto.id }}</th>
-                      <td>{{ depto.nome }}</td>
-                      <td>{{ depto._local }}</td>
-                      <td>{{ depto.descricao }}</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <p v-if="departamentos.length === 0" class="text-muted">
-                Carregando dados da API...
-              </p>
-
-              <p v-if="departamentos.length > 0 && departamentosFiltrados.length === 0" class="text-muted">
-                Nenhum resultado encontrado para "{{ termoBusca }}".
-              </p>
             </div>
           </div>
         </div>
 
-        <script src="https://unpkg.com/vue@3"></script>
-        <script>
-          // 2. A sintaxe para criar o app mudou
-          const { createApp } = Vue
+        <!-- Modal: Atualizar Departamento -->
+        <div class="modal fade" id="atualizarModal" tabindex="-1" aria-labelledby="atualizarModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <form @submit.prevent="atualizarDepartamento">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="atualizarModalLabel">Atualizar Departamento</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label">ID</label>
+                    <input type="number" class="form-control" v-model="departamentoEmEdicao.id" disabled />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Nome</label>
+                    <input type="text" class="form-control" v-model="departamentoEmEdicao.nome" required />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Local</label>
+                    <input type="text" class="form-control" v-model="departamentoEmEdicao._local" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Descrição</label>
+                    <textarea class="form-control" rows="3" v-model="departamentoEmEdicao.descricao"></textarea>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                  <button type="submit" class="btn btn-primary"
+                    :disabled="!departamentoEmEdicao.nome || !departamentoEmEdicao.nome.trim()">Salvar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
 
-          const app = createApp({
-            data() {
-              return {
-                departamentos: [], // Lista original vinda da API
-                departamentoSelecionado: null, // Quem está selecionado (null = ninguém)
-                termoBusca: '', // O que está digitado na searchbar
-                paginaAtual: 'home' // Controla qual página está sendo exibida
-              }
-            },
-            computed: {
-              // Esta é a lista que a tabela vai RENDERIZAR.
-              // É uma lista "virtual" que se atualiza sozinha.
-              departamentosFiltrados() {
-                // Se não há nada na busca, retorna a lista completa
-                if (this.termoBusca === '') {
-                  return this.departamentos;
-                }
+      </div>
 
-                // Normaliza o termo de busca (minúsculas)
-                const busca = this.termoBusca.toLowerCase();
+      <!-- //funcionarios -->
+      <div v-if="paginaAtual === 'funcionarios'">
+        <div class=" d-flex justify-content-between mb-3 .align-bottom">
+          <h2>Funcionários Cadastrados</h2>
 
-                // Filtra a lista principal
-                return this.departamentos.filter(depto => {
-                  // Converte tudo para string e minúsculas para buscar em TODOS os campos
-                  const id = String(depto.id).toLowerCase();
-                  const nome = depto.nome.toLowerCase();
-                  const local = depto._local.toLowerCase();
-                  const desc = depto.descricao.toLowerCase();
+          <form class="d-flex" role="search">
+            <input class="form-control me-3" type="search" placeholder="Buscar em Funcionários"
+              style=" min-width: 350px;" v-model="termoBusca" @input="desselecionar" />
+          </form>
 
-                  // Retorna true se QUALQUER campo incluir o termo de busca
-                  return id.includes(busca) || 
-                        nome.includes(busca) || 
-                        local.includes(busca) || 
-                        desc.includes(busca);
-                });
-              }
-            },
-            methods: {
-              // Este método é chamado pelo fetch() quando o app carrega
-              carregarDepartamentos() {
-                fetch('http://localhost:8080/departamento')
-                  .then(response => response.json())
-                  .then(data => {
-                    this.departamentos = data; // Guarda os dados na lista principal
-                  })
-                  .catch(error => {
-                    console.error('Erro ao buscar departamentos:', error)
-                  });
-              },
+          <div class="btn-group" role="group" style="white-space: nowrap; height: 38px;">
+            <!-- Quando uma linha está selecionada: Atualizar/Deletar habilitados (azul), Adicionar desabilitado (cinza) -->
+            <button id="adicionar" type="button" class="btn"
+              :class="{ 'btn-primary': funcionarioSelecionado === null, 'btn-secondary': funcionarioSelecionado !== null }"
+              :disabled="funcionarioSelecionado !== null" @click="abrirModalAdicionarF">Adicionar</button>
 
-              // Chamado quando uma <tr> é clicada
-              selecionarDepartamento(depto) {
-                // Se o usuário clicar na linha que JÁ está selecionada...
-                if (this.departamentoSelecionado === depto) {
-                  this.departamentoSelecionado = null; // ... desmarca (fica nulo).
-                } else {
-                  this.departamentoSelecionado = depto; // ... senão, seleciona.
-                }
-              },
+            <button id="atualizar" type="button" class="btn"
+              :class="{ 'btn-primary': funcionarioSelecionado !== null, 'btn-secondary': funcionarioSelecionado === null }"
+              :disabled="funcionarioSelecionado === null" @click="abrirModalAtualizarF">Atualizar</button>
 
-              // Chamado quando o usuário digita na busca
-              desselecionar() {
-                this.departamentoSelecionado = null; // Limpa a seleção
-              },
+            <button id="deletar" type="button" class="btn"
+              :class="{ 'btn-primary': funcionarioSelecionado !== null, 'btn-secondary': funcionarioSelecionado === null }"
+              :disabled="funcionarioSelecionado === null" @click="deletarFuncionario">Deletar</button>
+          </div>
+        </div>
 
-              // Chamado pelo botão "Deletar"
-              deletarDepartamento() {
-                // Pega o ID do item selecionado
-                const id = this.departamentoSelecionado.id;
-                
-                // Confirmação (boa prática)
-                if (confirm(`Tem certeza que deseja deletar o departamento ID ${id}?`)) {
-                  
-                  // Chama a API (Ex: DELETE http://localhost:8080/departamento/4)
-                  fetch(`http://localhost:8080/departamento/${id}`, {
-                    method: 'DELETE'
-                  })
-                  .then(response => {
-                    if (response.ok) {
-                      // Se deu certo, remove o item da lista LOCAL (sem F5)
-                      this.departamentos = this.departamentos.filter(d => d.id !== id);
-                      this.desselecionar(); // Limpa a seleção
-                    } else {
-                      alert('Erro ao deletar departamento.');
-                    }
-                  })
-                  .catch(error => console.error('Erro:', error));
-                }
-              },
+        <table class="table table-hover" v-if="funcionariosFiltrados.length > 0">
+          <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Nome</th>
+              <th scope="col">Função</th>
+              <th scope="col">Registro</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="func in funcionariosFiltrados" :key="func.id" @click="selecionarFuncionario(func)"
+              :class="{ 'table-secondary': func === funcionarioSelecionado }" style="cursor: pointer;">
 
-              // Métodos placeholder para os outros botões
-              abrirModalAdicionar() {
-                this.desselecionar();
-                alert('Aqui você abriria um Modal para ADICIONAR um novo departamento.');
-                // Ex: this.novoDepartamento = {}; this.showModalAdd = true;
-              },
-              
-              abrirModalAtualizar() {
-                alert(`Aqui você abriria um Modal para ATUALIZAR o ID ${this.departamentoSelecionado.id}`);
-                // Ex: this.departamentoEdit = { ...this.departamentoSelecionado }; 
-                // this.showModalEdit = true;
-              }
-            },
+              <th scope="row">{{ func.id }}</th>
+              <td>{{ func.nome }}</td>
+              <td>{{ func.funcao }}</td>
+              <td>{{ func.registro }}</td>
+            </tr>
+          </tbody>
+        </table>
 
-            mounted() {
-              this.carregarDepartamentos();
-            }
-          });
-          app.mount('#app')
-        </script>
-    </body>
+        <p v-if="funcionarios.length === 0" class="text-muted">
+          Carregando dados da API...
+        </p>
+
+        <p v-if="funcionarios.length > 0 && funcionariosFiltrados.length === 0" class="text-muted">
+          Nenhum resultado encontrado para "{{ termoBusca }}".
+        </p>
+      </div>
+      <!-- Modal: Adicionar funcionario -->
+      <div class="modal fade" id="adicionarModalF" tabindex="-1" aria-labelledby="adicionarModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form @submit.prevent="criarFuncionario">
+              <div class="modal-header">
+                <h5 class="modal-title" id="adicionarModalLabel">Adicionar Funcionário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label class="form-label">Nome</label>
+                  <input type="text" class="form-control" v-model="novoFuncionario.nome" required />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Função</label>
+                  <input type="text" class="form-control" v-model="novoFuncionario.funcao" />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Registro</label>
+                  <textarea class="form-control" rows="3" v-model="novoFuncionario.registro"></textarea>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Departamento</label>
+                  <select class="form-select" v-model="novoFuncionario.departamento" required>
+                    <option :value="null" disabled>Selecione um departamento</option>
+                    <option v-for="depto in departamentos" :key="depto.id" :value="depto.id">
+                      {{ depto.nome }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary"
+                  :disabled="!novoFuncionario.nome || !novoFuncionario.nome.trim()">Salvar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal: Atualizar funcionario -->
+      <div class="modal fade" id="atualizarModalF" tabindex="-1" aria-labelledby="atualizarModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form @submit.prevent="atualizarFuncionario">
+              <div class="modal-header">
+                <h5 class="modal-title" id="atualizarModalLabel">Atualizar Funcionário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label class="form-label">ID</label>
+                  <input type="number" class="form-control" v-model="funcionarioEmEdicao.id" disabled />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Nome</label>
+                  <input type="text" class="form-control" v-model="funcionarioEmEdicao.nome" required />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Função</label>
+                  <input type="text" class="form-control" v-model="funcionarioEmEdicao.funcao" />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Registro</label>
+                  <textarea class="form-control" rows="3" v-model="funcionarioEmEdicao.registro"></textarea>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary"
+                  :disabled="!funcionarioEmEdicao.nome || !funcionarioEmEdicao.nome.trim()">Salvar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div> 
+  </div>
+
+      <script src="https://unpkg.com/vue@3"></script>
+      <script src="app.js"></script>
+</body>
+
 </html>

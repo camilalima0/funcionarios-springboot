@@ -27,9 +27,8 @@ public class Funcionario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
-    @ManyToOne(fetch = FetchType.LAZY) 
+    @ManyToOne(fetch = FetchType.EAGER) 
     @JoinColumn(name = "departamento_id") 
-    @JsonIgnore 
     private Departamento departamento;
     @Column(name = "nome")
     private String nome;

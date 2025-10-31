@@ -1,5 +1,6 @@
 package com.tarefa2.funcionarios.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -31,6 +32,7 @@ public class Departamento {
     private String _local;
     @Column(name = "descricao")
     private String descricao;
+    @JsonIgnore 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "departamento") 
     private List<Funcionario> funcionarios;
 }
